@@ -1,39 +1,38 @@
-'use strict';
+"use strict";
 
 //
 // Require all dependencies.
 //
-const jwt = require('jwt-simple');
+const jwt = require("jwt-simple");
 
 //
 // The secret that we use to calculate and validate the signature of the JWT.
 //
-const secret = 'xxx';
+const secret = "xxx";
 //
 // Expose the authorization function.
 //
 module.exports = function authorize(req, authorized) {
-  console.log('1.authorize query : ', req.query);
-  var token = req.query.token
-    , error
-    , payload;
+  // console.log('1.authorize query : ', req.query);
+  var token = req.query.token,
+    error,
+    payload;
 
   if (!token) {
-    error = 'Missing access token';
+    error = "Missing access token";
     console.log(error.message);
     return authorized(error);
   }
 
-  console.log('2.authorize token : ', token);
+  // console.log('2.authorize token : ', token);
   //
   // `jwt-simple` throws errors if something goes wrong when decoding the JWT.
   //
   try {
     payload = jwt.decode(token, secret);
-    console.log('3.authorize key : ',  payload);
-  }
-  catch (e) {
-    console.log('3.authorize key : ',e.message);
+    // console.log("3.authorize key : ", payload);
+  } catch (e) {
+    console.log("3.authorize key error : ", e.message);
     return authorized(e.message);
   }
 
@@ -42,8 +41,8 @@ module.exports = function authorize(req, authorized) {
   // expired.
   //
   if (Date.now() > payload.exp) {
-    error = 'Expired access token';
-    console.log('4.date error : ',error);
+    error = "Expired access token";
+    console.log("4.date error : ", error);
     return authorized(error);
   }
 
@@ -51,10 +50,10 @@ module.exports = function authorize(req, authorized) {
   // Check if the user is still present and allowed in our db. You could tweak
   // this to invalidate a token.
   //
-  var user = 'AUTHORIZED';
-  if (user !== 'AUTHORIZED') {
-    error = 'Invalid access token';
-    console.log('5. user error : ', error);
+  var user = "AUTHORIZED";
+  if (user !== "AUTHORIZED") {
+    error = "Invalid access token";
+    console.log("5. user error : ", error);
     return authorized(error);
   }
 

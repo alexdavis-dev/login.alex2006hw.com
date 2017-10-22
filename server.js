@@ -15,6 +15,7 @@ const bodyParser = require("body-parser"),
   levelup = require("levelup"),
   leveldown = require("leveldown"),
   Primus = require("primus.io");
+// rooms = require("primus-rooms");
 
 require("gun-level");
 
@@ -56,34 +57,81 @@ primus.save(__dirname + "/primus.js");
 //
 // Add the authorization hook.
 //
-// primus.authorize(authorize);
+primus.authorize(authorize);
+
+// Add room plugin
+// primus.plugin("rooms", rooms);
 
 //
 // `connection` is only triggered if the authorization succeeded.
 //
-primus.on("connection", function connection(spark) {
+primus.on("connection", spark => {
   gunPeers.push(spark);
   console.log("1.connection : SUCCESS : ", spark.id);
   const SUCCESS = { type: "authenticated", payload: "success" };
   spark.write(SUCCESS);
 
-  spark.on("data", function(msg) {
-    gunPeers.forEach(peer => {
-      peer.send(msg);
+  // rooms
+  const joinRoom = room => {
+    spark.join(room, () => {
+      // send message to this client
+      spark.send(["sport", "you joined room " + room]);
+      console.log("1.joinRoom : ", room);
+      // send message to all clients except this one
+      spark
+        .room(room)
+        .except(spark.id)
+        .write("sport", spark.id + " joined room " + room);
     });
-    msg = JSON.parse(msg);
-    console.log("2.spark data : ", msg);
+  };
+
+  const leaveRoom = room => {
+    spark.leave(room, () => {
+      // send message to this client
+      spark.send("sport", "you left room " + room);
+      console.log("1.leaveRoom : ", room);
+    });
+  };
+  const updateGundb = msg => {
+    gunPeers.forEach(peer => {
+      if (peer) peer.write(msg);
+    });
+    // msg = JSON.parse(msg);
+    console.log("1.updateGundb : ", msg);
     if ("forEach" in msg)
       msg.forEach(m => {
-        console.log("3.spark data : ", m);
+        console.log("2.updateGundb : ", m);
         gun.on("in", JSON.parse(m));
       });
     else {
       gun.on("in", msg);
     }
+  };
+  // gundb
+  spark.on("data", msg => {
+    console.log("1.data : ", msg);
+    if (msg.type === 0 && msg.data.length && msg.data) {
+      const choice = msg.data[0];
+      // console.log("2.data choice : ", choice);
+      switch (choice) {
+        case "join":
+          // console.log("3.data choice join");
+          joinRoom(msg.data[1]);
+          break;
+        case "leave":
+          // console.log("4.data choice leave");
+          leaveRoom(msg.data[1]);
+          break;
+        default:
+          console.log("5.data choice default");
+          updateGundb(msg);
+          break;
+      }
+    }
   });
 
-  spark.on("message", function(msg) {
+  spark.on("message", msg => {
+    console.log("message : ", msg);
     gunPeers.forEach(peer => {
       peer.send(msg);
     });
@@ -99,15 +147,16 @@ primus.on("connection", function connection(spark) {
     }
   });
 
-  spark.on("close", function(reason, desc) {
+  spark.on("close", (reason, desc) => {
+    console.log("close : ", reason, desc);
     // gunpeers gone.
-    var i = gunPeers.findIndex(function(p) {
+    var i = gunPeers.findIndex(p => {
       return p === connection;
     });
     if (i >= 0) gunPeers.splice(i, 1);
   });
 
-  spark.on("error", function(error) {
+  spark.on("error", error => {
     console.log("WebSocket Error:", error);
   });
 
@@ -117,6 +166,6 @@ primus.on("connection", function connection(spark) {
 //
 // Begin accepting connections.
 //
-server.listen(PORT, function listening() {
+server.listen(PORT, () => {
   console.log(`Open http://localhost:${PORT} in your browser`);
 });
