@@ -14,7 +14,7 @@ const bodyParser = require("body-parser"),
   Gun = require("gun"),
   levelup = require("levelup"),
   leveldown = require("leveldown"),
-  Primus = require("primus");
+  Primus = require("primus.io");
 
 require("gun-level");
 

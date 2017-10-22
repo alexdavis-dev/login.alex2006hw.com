@@ -3,3 +3,4 @@ primus.js
 tmp
 configs
 data.json
+.env
