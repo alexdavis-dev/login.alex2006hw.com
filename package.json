@@ -1,0 +1,32 @@
+{
+  "name": "login.alex2006hw.com",
+  "version": "0.0.1",
+  "description": "alex2006hw data connector",
+  "main": "server.js",
+  "scripts": {
+    "client": "cd test;node client.js",
+    "start": "node server.js",
+    "global": "node server-express.js",
+    "local": "node server-primus.js"
+  },
+  "keywords": [
+    "token-memory",
+    "gundb",
+    "firebase",
+    "primus"
+  ],
+  "author": "Alex Davis <alex@alex2006hw.com>",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "1.18.2",
+    "express": "4.15.5",
+    "gun": "^0.8.7",
+    "gun-level": "^6.0.1",
+    "jwt-simple": "0.5.1",
+    "leveldown": "^1.8.0",
+    "levelup": "^1.3.9",
+    "primus": "7.1.0",
+    "serve-favicon": "^2.4.5",
+    "ws": "3.2.0"
+  }
+}

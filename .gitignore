@@ -1,0 +1,5 @@
+**/node_modules
+primus.js
+tmp
+configs
+data.json
